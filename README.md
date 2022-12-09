@@ -7,6 +7,7 @@ This Repository is second assessment test. Build entirely using XML for view sys
  -  Dagger Hilt
  -  Lifecycle ViewModel
  -  Material UI 
+ -  Paging 3
  -  Glide
  -  Kotlin Coroutines
  -  Retrofit
