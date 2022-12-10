@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SearchNewsFragment(
-    val onTap: (data: Article) -> Unit
+    val onTap: (data: Article) -> Unit,
 ) : Fragment() {
     private val viewModel: SearchViewModel by activityViewModels()
     private lateinit var binding: FragmentSearchNewsBinding
@@ -58,6 +58,9 @@ class SearchNewsFragment(
 
     }
 
+    /**
+     * Setup search news adapter and bind it to recyclerview
+     * **/
     private fun setupAdapter() {
         newsAdapter = NewsAdapter(requireContext()){
             val webViewBinding = WebviewBinding.inflate(this.layoutInflater)
@@ -88,26 +91,27 @@ class SearchNewsFragment(
 
             binding.progressCircular.isVisible = loadState.source.refresh is LoadState.Loading
             binding.rvSearchNews.isVisible = loadState.source.refresh is LoadState.NotLoading
-
-
-            // empty view
-            if (loadState.source.refresh is LoadState.NotLoading &&
-                loadState.append.endOfPaginationReached &&
-                newsAdapter.itemCount < 1
-            ) {
-                binding.rvSearchNews.isVisible = false
-//                    textViewEmpty.isVisible = true
-            } else {
-//                    textViewEmpty.isVisible = false
+            if(loadState.source.refresh is LoadState.Error){
+                showError()
+            }else{
+                hideError()
             }
+
 
         }
     }
 
+    /**
+     * Show error and hide the recyclerview
+     * **/
     private fun showError(){
         binding.errorContainer.visibility = View.VISIBLE
         binding.rvSearchNews.visibility = View.GONE
     }
+
+    /**
+     * Hide error and show the recyclerview
+     * **/
     private fun hideError(){
         binding.errorContainer.visibility = View.GONE
         binding.rvSearchNews.visibility = View.VISIBLE

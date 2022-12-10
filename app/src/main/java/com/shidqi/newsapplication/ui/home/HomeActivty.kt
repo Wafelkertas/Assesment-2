@@ -13,13 +13,15 @@ import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.shidqi.newsapplication.databinding.ActivityMainBinding
 import com.shidqi.newsapplication.databinding.WebviewBinding
-import com.shidqi.newsapplication.utils.Resource
+import com.shidqi.newsapplication.ui.favorite.FavoriteActivity
 import com.shidqi.newsapplication.ui.home.newsAdapter.NewsAdapter
+import com.shidqi.newsapplication.utils.Resource
 import com.shidqi.newsapplication.ui.home.newsAdapter.NewsLoadStateAdapter
 import com.shidqi.newsapplication.ui.search.SearchActivity
 import com.shidqi.newsapplication.ui.home.sourceAdapter.SourceAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 @AndroidEntryPoint
@@ -52,7 +54,6 @@ class HomeActivty : AppCompatActivity() {
         bindViewModels()
         setupAdapter()
 
-
     }
 
     /**
@@ -64,20 +65,22 @@ class HomeActivty : AppCompatActivity() {
             startActivity(intent)
         }
         binding.chipGroup.setOnCheckedStateChangeListener { chip, checked ->
-
+            backPressedCounter = 1
             if (checked.isEmpty()) {
                 binding.chipGroup.check(homeViewModel.categoryPosition)
             }
             if (checked.isNotEmpty()) {
-
                 homeViewModel.category = categoryList[checked.first()]
                 homeViewModel.categoryPosition = checked.first()
             }
-            homeViewModel.page = 1
             homeViewModel.getSources()
             homeViewModel.showingNews.value = false
         }
         binding.chipGroup.check(binding.chipGroup.getChildAt(0).id)
+
+        binding.ivFavorite.setOnClickListener {
+            startActivity(Intent(this, FavoriteActivity::class.java))
+        }
     }
 
     /**
@@ -140,13 +143,30 @@ class HomeActivty : AppCompatActivity() {
      * Create an adapter for all the recyclerview
      * **/
     private fun setupAdapter() {
-        newsAdapter = NewsAdapter(this) {
+        newsAdapter = NewsAdapter(this) {article->
             val webViewBinding = WebviewBinding.inflate(this@HomeActivty.layoutInflater)
             setContentView(webViewBinding.root)
-            webViewBinding.webView.loadUrl(it.url)
+            webViewBinding.webView.loadUrl(article.url)
             webViewBinding.backButton.setOnClickListener {
                 setContentView(binding.root)
             }
+            val alreadyFavorite = runBlocking{
+                homeViewModel.findNewsInDatabase(article)
+            }
+            if (alreadyFavorite){
+                webViewBinding.ivFavorite.visibility = View.INVISIBLE
+                webViewBinding.ivFavorited.visibility = View.VISIBLE
+                webViewBinding.ivFavorited.setOnClickListener {
+                    homeViewModel.deleteNews(article)
+                }
+            }else{
+                webViewBinding.ivFavorited.visibility = View.INVISIBLE
+                webViewBinding.ivFavorite.visibility = View.VISIBLE
+                webViewBinding.ivFavorite.setOnClickListener {
+                    homeViewModel.insertNewsToDatabase(article)
+                }
+            }
+
         }
 
 
@@ -169,6 +189,12 @@ class HomeActivty : AppCompatActivity() {
             binding.progressCircular.isVisible = loadState.source.refresh is LoadState.Loading
             if (loadState.source.refresh is LoadState.Error){
                 showError("Error Something Happened")
+            }else{
+                hideError()
+            }
+
+            if (loadState.source.refresh !is LoadState.Error && loadState.source.refresh !is LoadState.Loading && newsAdapter.itemCount == 0){
+                showError("No News Found ")
             }
 
 
@@ -178,6 +204,7 @@ class HomeActivty : AppCompatActivity() {
         sourceAdapter = SourceAdapter(context = this, onClick = {
             newsAdapter.submitData(lifecycle, PagingData.empty())
             binding.tvNews.text = "News from ${it.name}"
+            binding.tvNews.visibility = View.VISIBLE
             homeViewModel.currentQuery.value = it.id
             binding.sourceContainer.isVisible = false
             binding.newsContainer.isVisible = true

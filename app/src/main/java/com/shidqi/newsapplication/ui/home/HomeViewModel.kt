@@ -2,17 +2,14 @@ package com.shidqi.newsapplication.ui.home
 
 import android.content.Context
 import androidx.lifecycle.*
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.shidqi.newsapplication.data.NewsPagingSource
 import com.shidqi.newsapplication.models.Article
 import com.shidqi.newsapplication.models.SourceData
 import com.shidqi.newsapplication.utils.Resource
 import com.shidqi.newsapplication.repository.NewsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
@@ -26,7 +23,6 @@ class HomeViewModel @Inject constructor(
     /**
      * Variable to hold some api parameter or loading state
      * **/
-    var page: Int = 1
     var category = "business"
     var categoryPosition = 0
     var isLoading: Boolean = false
@@ -60,7 +56,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             listOfSource.value = Resource.Loading()
             isLoading = true
-            delay(2000)
             try {
                 val response = newsRepository.getSource(category = category)
                 if (response.sources.isNotEmpty()) {
@@ -80,8 +75,20 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun insertNewsToDatabase(article: Article){
+        CoroutineScope(Dispatchers.IO).launch {
+            newsRepository.insertArticle(article)
+        }
+    }
 
+    suspend fun findNewsInDatabase(article: Article) =
+        CoroutineScope(Dispatchers.IO).async {
+            return@async newsRepository.findNews(article)
+        }.await()
 
-
-
+    fun deleteNews(article: Article){
+        viewModelScope.launch {
+            newsRepository.deleteArticle(article)
+        }
+    }
 }

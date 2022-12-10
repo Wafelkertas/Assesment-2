@@ -50,7 +50,7 @@ object NetworkModule {
                 val originalHttpUrl: HttpUrl = original.url
 
                 val url = originalHttpUrl.newBuilder()
-                    .addQueryParameter("apiKey", "aa52150edc55464fa3db911cc8fac360")
+                    .addQueryParameter("apiKey", "1c7e8ac885fa41af87f36cb2058e62ff")
                     .build()
 
                 // Request customization: add request headers

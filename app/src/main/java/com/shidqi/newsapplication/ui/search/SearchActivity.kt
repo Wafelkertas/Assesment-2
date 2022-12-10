@@ -17,6 +17,9 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
     private val searchViewModel: SearchViewModel by viewModels()
+    private val callback : () -> Unit = {
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -34,6 +37,7 @@ class SearchActivity : AppCompatActivity() {
      * **/
     private fun initView() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
             override fun onQueryTextSubmit(p0: String?): Boolean {
 
                 if (p0 != null) {
@@ -72,7 +76,6 @@ class SearchActivity : AppCompatActivity() {
                     setContentView(webViewBinding.root)
                     webViewBinding.webView.loadUrl(it.url)
                     webViewBinding.backButton.setOnClickListener {
-
                         setContentView(binding.root)
                     }
 
@@ -85,7 +88,6 @@ class SearchActivity : AppCompatActivity() {
                 setContentView(webViewBinding.root)
                 webViewBinding.webView.loadUrl(it.url)
                 webViewBinding.backButton.setOnClickListener {
-
                     setContentView(binding.root)
                 }
 

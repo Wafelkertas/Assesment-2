@@ -1,6 +1,6 @@
 package com.shidqi.newsapplication.di
 
-import com.shidqi.newsapplication.data.NewsPagingSource
+import com.shidqi.newsapplication.database.NewsDatabase
 import com.shidqi.newsapplication.repository.NewsRepository
 import com.shidqi.newsapplication.service.IRetrofit
 import dagger.Module
@@ -18,8 +18,8 @@ object RepositoryModule {
      * **/
     @Singleton
     @Provides
-    fun provideNewsRepository(retrofitService: IRetrofit,): NewsRepository {
-        return NewsRepository(retrofitService)
+    fun provideNewsRepository(retrofitService: IRetrofit, database: NewsDatabase): NewsRepository {
+        return NewsRepository(retrofitService, database)
     }
 
 

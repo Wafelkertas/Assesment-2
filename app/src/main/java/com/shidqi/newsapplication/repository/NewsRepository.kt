@@ -1,5 +1,6 @@
 package com.shidqi.newsapplication.repository
 
+
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.paging.Pager
@@ -7,27 +8,22 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import com.shidqi.newsapplication.data.NewsPagingSource
+import com.shidqi.newsapplication.database.NewsDatabase
 import com.shidqi.newsapplication.models.Article
-import com.shidqi.newsapplication.models.NewsResponse
 import com.shidqi.newsapplication.models.SourceResponse
+import com.shidqi.newsapplication.models.dbEntity.ArticleEntity
+import com.shidqi.newsapplication.models.dbEntity.toArticle
+import com.shidqi.newsapplication.models.dbEntity.toArticleEntity
 import com.shidqi.newsapplication.service.IRetrofit
 import com.shidqi.newsapplication.utils.NEWS_API_PAGE_SIZE
 
-class NewsRepository(private val retrofit: IRetrofit) {
+class NewsRepository(
+    private val retrofit: IRetrofit,
+    private val database: NewsDatabase,
+) {
 
-    /**
-     * call getNews in IRetrofit service
-     * */
-    suspend fun getNews(category: String, page:Int, query:String): NewsResponse {
-        return retrofit.getNews(category = category, page = page, query = query)
-    }
 
-    /**
-     * call getAllNews in IRetrofit service
-     * */
-    suspend fun getAllNews( page:Int, query:String): NewsResponse {
-        return retrofit.getAllNews( page = page, query = "",query, pageSize = 30)
-    }
+    private val databaseDao = database.newsDao()
 
     /**
      * call getSource in IRetrofit service
@@ -36,7 +32,11 @@ class NewsRepository(private val retrofit: IRetrofit) {
         return retrofit.getSources(category = category)
     }
 
-    fun getSearchResultStream(sourcesQuery: String, searchQuery: String,context : Context): LiveData<PagingData<Article>> {
+    fun getSearchResultStream(
+        sourcesQuery: String,
+        searchQuery: String,
+        context: Context
+    ): LiveData<PagingData<Article>> {
         return Pager(
             config = PagingConfig(
                 pageSize = NEWS_API_PAGE_SIZE,
@@ -46,6 +46,25 @@ class NewsRepository(private val retrofit: IRetrofit) {
         ).liveData
     }
 
+    suspend fun getNewsFromDatabase(): List<Article> {
+        val data = databaseDao.queryArticle()
+        return data.map {
+            it.toArticle()
+        }
+    }
+
+    suspend fun insertArticle(article: Article) {
+        databaseDao.insertNews(article.toArticleEntity())
+    }
+
+    suspend fun deleteArticle(article: Article) {
+        databaseDao.deleteNews(article.toArticleEntity())
+    }
+
+    suspend fun findNews(article: Article) : Boolean{
+        val data= databaseDao.findNews(article.url)
+        return data != null
+    }
 
 
 }
