@@ -3,7 +3,7 @@
 This Repository is second assessment test. Build entirely using XML for view system, Dagger Hilt as dependency injection, and Retrofit as HTTP Client.
  
  ## Application Architecture
- ![Assesment-1](https://user-images.githubusercontent.com/57066616/206856181-ef9c5c3b-32ff-46b8-afd1-7b5805dc3a17.png)
+![Assesment-1 drawio (1)](https://user-images.githubusercontent.com/57066616/206884247-17180bcb-5d30-43f5-9e53-0972f3b2ffcf.png)
 
 ## Library Used
 
